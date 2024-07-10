@@ -97,14 +97,14 @@ async def on_message(message):
     if any(content.startswith(prefix) for prefix in ["eyvallah", "eyv", "eyw"]):
         await message.channel.send("Ne demek canım")
 
-    if any(content.startswith(greet) for greet in ["selamın aleyküm", "selamınaleyküm", "sa", "sea"]):
+    if content.startswith(".gif"):
+        giphy_key = os.getenv("GIPHY_KEY")
         async with aiohttp.ClientSession() as session:
-            async with session.get("https://cdn.discordapp.com/attachments/1260191025528307725/1260517782672506900/image.png?ex=668f9c2a&is=668e4aaa&hm=16a4b7bf641bf5b6d5bb4e5442c7e3946a6fe498046d298f323fface92a2af8b&") as resp:
+            async with session.get(f"https://api.giphy.com/v1/gifs/random?api_key={giphy_key}&tag=&rating=G") as resp:
                 if resp.status == 200:
-                    data = await resp.read()
-                    with open("image.png", "wb") as f:
-                        f.write(data)
-                    await message.channel.send(file=discord.File("image.png"))
+                    data = await resp.json()
+                    gif_url = data['data']['images']['original']['url']
+                    await message.channel.send(gif_url)
     
     if content.startswith(".events"):
         await message.channel.send("Fetching today's historical events...")
