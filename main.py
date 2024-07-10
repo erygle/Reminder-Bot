@@ -11,11 +11,11 @@ from keep_alive import keep_alive
 import pytz
 import aiohttp
 
-load_dotenv()  # .env dosyasını yükler ve ortam değişkenlerine ekler
+load_dotenv()
 
-intents = discord.Intents.default()  # Varsayılan intentleri kullanır
-intents.messages = True  # Mesajlarla ilgili etkinlikleri izlemeye izin verir
-intents.guilds = True  # Sunucu (guild) etkinliklerini izlemeye izin verir
+intents = discord.Intents.default()
+intents.messages = True
+intents.guilds = True
 intents.message_content = True
 
 client = discord.Client(intents=intents)
@@ -34,7 +34,7 @@ async def fetch_events():
     print("Fetching today's historical events...")
 
     now = datetime.now(pytz.timezone('Europe/Istanbul'))
-    date = now.strftime("%m/%d")  # API'nin beklediği formatta tarih
+    date = now.strftime("%m/%d")
 
     url = f'https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{date}'
 
@@ -54,14 +54,12 @@ async def fetch_events():
         print(f"An error occurred while fetching today's historical events. Status code: {response.status_code}")
 
 def split_message(message, max_length=2000):
-    # Mesajı parçalara bölen yardımcı fonksiyon
     return [message[i:i + max_length] for i in range(0, len(message), max_length)]
 
 def clean_text(text):
-    # Metni temizleyen yardımcı fonksiyon
-    text = re.sub(r'\s+', ' ', text)  # Fazla boşlukları temizle
-    text = text.replace("\n", " ")  # Yeni satırları boşlukla değiştir
-    text = re.sub(r'([a-zA-Z])([\.,!?])', r'\1 \2', text)  # Noktalama işaretlerinden önce boşluk ekle
+    text = re.sub(r'\s+', ' ', text)
+    text = text.replace("\n", " ")
+    text = re.sub(r'([a-zA-Z])([\.,!?])', r'\1 \2', text)
     return text
 
 def get_page(events, page, page_size):
@@ -75,11 +73,10 @@ def create_response_message(events, page, page_size):
     page_events = get_page(events, page, page_size)
 
     response_message=""
-    #response_message = f"Page {page + 1}/{total_pages}\n"
     for event in page_events:
         year = event['year']
         description = clean_text(event['text'])
-        response_message += f"`{year}` - *{description}*\n"  # İtalik yapmak için yıldız işaretleri kullanılır
+        response_message += f"`{year}` - *{description}*\n"
 
     response_message += f"Page {page + 1}/{total_pages}\n"
     
@@ -92,7 +89,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    content = message.content.lower()  # Mesaj içeriğini küçük harfe çevir
+    content = message.content.lower()
 
     if content.startswith("hello"):
         await message.channel.send("Hello!")
@@ -113,7 +110,7 @@ async def on_message(message):
         await message.channel.send("Fetching today's historical events...")
 
         now = datetime.now(pytz.timezone('Europe/Istanbul'))
-        date = now.strftime("%m/%d")  # API'nin beklediği formatta tarih
+        date = now.strftime("%m/%d")
 
         url = f'https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{date}'
 
@@ -176,7 +173,7 @@ async def on_message(message):
             data = response.json()
             quote = data[0]['q']
             author = data[0]['a']
-            await message.channel.send(f'*"{quote}"* - {author}')  # Sözün kendisi italik yapılır
+            await message.channel.send(f'*"{quote}"* - {author}')
         else:
             await message.channel.send("An error occurred while fetching the quote.")
 
