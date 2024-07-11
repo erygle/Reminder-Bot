@@ -38,20 +38,24 @@ async def fetch_events():
 
     url = f'https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{date}'
 
-    response = requests.get(url)
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    events = await response.json()
+                    events = events.get('events', [])
+                    if not events:
+                        print("No historical events found for today.")
+                        return
 
-    if response.status_code == 200:
-        events = response.json().get('events', [])
-        if not events:
-            print("No historical events found for today.")
-            return
-
-        current_page = 0
-        total_pages = math.ceil(len(events) / page_size)
-        response_message = f"Number of historical events: *{len(events)}*. Total pages: *{total_pages}*.\n"
-        print(response_message)
-    else:
-        print(f"An error occurred while fetching today's historical events. Status code: {response.status_code}")
+                    current_page = 0
+                    total_pages = math.ceil(len(events) / page_size)
+                    response_message = f"Number of historical events: *{len(events)}*. Total pages: *{total_pages}*.\n"
+                    print(response_message)
+                else:
+                    print(f"An error occurred while fetching today's historical events. Status code: {response.status}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 def split_message(message, max_length=2000):
     return [message[i:i + max_length] for i in range(0, len(message), max_length)]
@@ -192,6 +196,7 @@ async def on_message(message):
             "`.random` - Display a random historical event from today.\n"
             "`.quote` - Display a random quote.\n"
             "`.date` - Display the current date and time.\n"
+            "`.gif` - Display a random GIF.\n"
             "`.help` - Display this help message."
         )
         await message.channel.send(help_message)
